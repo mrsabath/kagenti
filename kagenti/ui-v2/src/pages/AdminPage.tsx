@@ -66,7 +66,7 @@ export const AdminPage: React.FC = () => {
 
   // Build Keycloak admin console URL from dashboard config or auth status
   const keycloakBaseUrl = authStatus?.keycloak_url || dashboardConfig?.keycloakConsole?.replace(/\/admin\/.*$/, '') || '';
-  const realm = authStatus?.realm || 'master';
+  const realm = authStatus?.realm || 'kagenti';
   // Prefer keycloakConsole from config (which comes from ConfigMap), fallback to constructed URL
   const keycloakAdminUrl = dashboardConfig?.keycloakConsole || `${keycloakBaseUrl}/admin/${realm}/console/`;
 

@@ -90,7 +90,7 @@ class Settings(BaseSettings):
 
     # Authentication settings - from kagenti-ui-oauth-secret
     enable_auth: bool = False  # Set to True to enable Keycloak auth
-    # AUTH_ENDPOINT format: http://keycloak.localtest.me:8080/realms/master/protocol/openid-connect/auth
+    # AUTH_ENDPOINT format: http://keycloak.localtest.me:8080/realms/kagenti/protocol/openid-connect/auth
     auth_endpoint: Optional[str] = None
     # REDIRECT_URI format: http://kagenti-ui.localtest.me:8080/oauth2/callback
     redirect_uri: Optional[str] = None
@@ -99,7 +99,7 @@ class Settings(BaseSettings):
 
     # Legacy direct config (fallback if AUTH_ENDPOINT not provided)
     keycloak_url: str = ""
-    keycloak_realm: str = "master"
+    keycloak_realm: str = "kagenti"
     keycloak_client_id: str = "kagenti-ui"
 
     @property
@@ -138,8 +138,8 @@ class Settings(BaseSettings):
     def effective_keycloak_realm(self) -> str:
         """
         Extract realm from AUTH_ENDPOINT or use direct config.
-        AUTH_ENDPOINT format: http://keycloak.localtest.me:8080/realms/master/protocol/openid-connect/auth
-        Returns: master
+        AUTH_ENDPOINT format: http://keycloak.localtest.me:8080/realms/kagenti/protocol/openid-connect/auth
+        Returns: kagenti
         """
         if self.auth_endpoint:
             # Pattern: /realms/{realm}/protocol/

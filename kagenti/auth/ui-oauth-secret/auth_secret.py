@@ -260,6 +260,84 @@ def main() -> None:
             verify=(verify_ssl if verify_ssl is not None else True),
         )
 
+        # Bootstrap realm and default user for non-master realms.
+        # Controlled by AUTO_BOOTSTRAP_REALM (default: true).
+        # Set to "false" in production to skip privileged operations.
+        auto_bootstrap = (
+            get_optional_env("AUTO_BOOTSTRAP_REALM", "true").lower() == "true"
+        )
+
+        if keycloak_realm != DEFAULT_KEYCLOAK_REALM and auto_bootstrap:
+            logger.info(
+                f"AUTO_BOOTSTRAP_REALM is enabled; ensuring realm '{keycloak_realm}' exists"
+            )
+            try:
+                existing_realms = keycloak_admin.get_realms()
+                if not any(r["realm"] == keycloak_realm for r in existing_realms):
+                    keycloak_admin.create_realm(
+                        payload={
+                            "realm": keycloak_realm,
+                            "enabled": True,
+                            "registrationAllowed": False,
+                        }
+                    )
+                    logger.info(f"Created Keycloak realm '{keycloak_realm}'")
+                else:
+                    logger.info(
+                        f"Realm '{keycloak_realm}' already exists, skipping creation"
+                    )
+            except Exception as e:
+                logger.error(
+                    f"Failed to bootstrap realm '{keycloak_realm}': {e}. "
+                    "Ensure the Keycloak admin has realm-management permissions, "
+                    "or set AUTO_BOOTSTRAP_REALM=false if the realm is pre-provisioned."
+                )
+                raise
+
+            keycloak_admin.change_current_realm(keycloak_realm)
+
+            # Create a default user so the UI has someone to log in as.
+            # Uses the same credentials as the Keycloak admin (e.g. admin/admin).
+            # Only creates if absent; never resets an existing user's password.
+            try:
+                existing_users = keycloak_admin.get_users(
+                    {"username": keycloak_admin_username}
+                )
+                if not existing_users:
+                    keycloak_admin.create_user(
+                        {
+                            "username": keycloak_admin_username,
+                            "enabled": True,
+                            "credentials": [
+                                {
+                                    "type": "password",
+                                    "value": keycloak_admin_password,
+                                    "temporary": False,
+                                }
+                            ],
+                        }
+                    )
+                    logger.info(
+                        f"Created default user '{keycloak_admin_username}' "
+                        f"in realm '{keycloak_realm}'"
+                    )
+                else:
+                    logger.info(
+                        f"User '{keycloak_admin_username}' already exists "
+                        f"in realm '{keycloak_realm}', skipping"
+                    )
+            except Exception as e:
+                logger.warning(
+                    f"Could not provision default user in realm "
+                    f"'{keycloak_realm}' (non-fatal): {e}"
+                )
+
+        elif keycloak_realm != DEFAULT_KEYCLOAK_REALM:
+            logger.info(
+                f"AUTO_BOOTSTRAP_REALM is disabled; assuming realm "
+                f"'{keycloak_realm}' already exists"
+            )
+
         # Register client
         # Configure as public client with PKCE for SPA best practices
         # Public clients don't use client secrets (can't be kept confidential in browser)

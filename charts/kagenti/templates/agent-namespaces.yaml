@@ -156,11 +156,11 @@ data:
       },
       {
         "name": "ISSUER",
-        "value": "{{ $root.Values.keycloak.publicUrl }}/realms/master"
+        "value": "{{ $root.Values.keycloak.publicUrl }}/realms/{{ $root.Values.keycloak.realm }}"
       },
       {
         "name": "JWKS_URI",
-        "value": "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/certs"
+        "value": "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/{{ $root.Values.keycloak.realm }}/protocol/openid-connect/certs"
       },
       {
         "name": "AUDIENCE",
@@ -178,11 +178,11 @@ data:
     [
       {
         "name": "ISSUER",
-        "value": "{{ $root.Values.keycloak.publicUrl }}/realms/master"
+        "value": "{{ $root.Values.keycloak.publicUrl }}/realms/{{ $root.Values.keycloak.realm }}"
       },
       {
         "name": "JWKS_URI",
-        "value": "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/certs"
+        "value": "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/{{ $root.Values.keycloak.realm }}/protocol/openid-connect/certs"
       },
       {
         "name": "AUDIENCE",
