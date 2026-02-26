@@ -304,10 +304,14 @@ def main() -> None:
                     {"username": keycloak_admin_username}
                 )
                 if not existing_users:
-                    keycloak_admin.create_user(
+                    user_id = keycloak_admin.create_user(
                         {
                             "username": keycloak_admin_username,
                             "enabled": True,
+                            "email": f"{keycloak_admin_username}@localtest.me",
+                            "emailVerified": True,
+                            "firstName": keycloak_admin_username.capitalize(),
+                            "lastName": "User",
                             "credentials": [
                                 {
                                     "type": "password",
@@ -321,6 +325,29 @@ def main() -> None:
                         f"Created default user '{keycloak_admin_username}' "
                         f"in realm '{keycloak_realm}'"
                     )
+
+                    # Grant realm-admin role so the user can access the
+                    # Keycloak admin console for this realm.
+                    try:
+                        realm_mgmt_client_id = keycloak_admin.get_client_id(
+                            "realm-management"
+                        )
+                        realm_admin_role = keycloak_admin.get_client_role(
+                            realm_mgmt_client_id, "realm-admin"
+                        )
+                        keycloak_admin.assign_client_role(
+                            user_id, realm_mgmt_client_id, [realm_admin_role]
+                        )
+                        logger.info(
+                            f"Assigned 'realm-admin' role to "
+                            f"'{keycloak_admin_username}' in realm "
+                            f"'{keycloak_realm}'"
+                        )
+                    except Exception as role_err:
+                        logger.warning(
+                            f"Could not assign realm-admin role "
+                            f"(non-fatal): {role_err}"
+                        )
                 else:
                     logger.info(
                         f"User '{keycloak_admin_username}' already exists "
