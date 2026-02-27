@@ -91,7 +91,22 @@ done
 # Use hypershift-full-test.sh with whitelist mode (--include-X flags)
 # This runs: install + agents only
 # Note: CLUSTER_SUFFIX is set by the workflow (e.g., pr594), don't override it
-exec "$REPO_ROOT/.github/scripts/local-setup/hypershift-full-test.sh" \
+"$REPO_ROOT/.github/scripts/local-setup/hypershift-full-test.sh" \
     --include-kagenti-install \
     --include-agents \
     --env ocp
+
+# When this script runs in GitHub Actions, always rebuild/restart ui-oauth-secret
+# from the checked-out source. This keeps PR behavior correct even when a
+# comment-triggered workflow definition comes from the default branch.
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo "Rebuilding and restarting ui-oauth-secret job from current checkout..."
+    "$REPO_ROOT/.github/scripts/common/25-build-oauth-secret-image.sh"
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+        {
+            echo "### UI OAuth bootstrap"
+            echo "- Rebuilt and restarted \`kagenti-ui-oauth-secret-job\` from current checkout."
+            echo "- Trigger script: \`.github/scripts/hypershift/ci/70-deploy-kagenti.sh\`."
+        } >> "$GITHUB_STEP_SUMMARY"
+    fi
+fi
