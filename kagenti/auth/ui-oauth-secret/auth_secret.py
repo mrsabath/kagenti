@@ -294,11 +294,11 @@ def main() -> None:
                 )
                 raise
 
-            keycloak_admin.change_current_realm(keycloak_realm)
-
             # Create a default user so the UI has someone to log in as.
             # Uses the same credentials as the Keycloak admin (e.g. admin/admin).
             # Only creates if absent; never resets an existing user's password.
+            # User creation is FATAL when bootstrap is enabled — without a
+            # user the UI login will fail downstream.
             try:
                 existing_users = keycloak_admin.get_users(
                     {"username": keycloak_admin_username}
@@ -397,9 +397,23 @@ def main() -> None:
                         f"in realm '{keycloak_realm}', skipping"
                     )
             except Exception as e:
-                logger.warning(
-                    f"Could not provision default user in realm "
-                    f"'{keycloak_realm}' (non-fatal): {e}"
+                logger.error(
+                    f"Failed to provision default user in realm "
+                    f"'{keycloak_realm}': {e}"
+                )
+                raise
+
+            # Verify the bootstrap user exists — fail fast if missing
+            # so we surface the root cause instead of downstream
+            # "user_not_found" login errors.
+            verification = keycloak_admin.get_users(
+                {"username": keycloak_admin_username}
+            )
+            if not verification:
+                raise KeycloakOperationError(
+                    f"Bootstrap user '{keycloak_admin_username}' not found "
+                    f"in realm '{keycloak_realm}' after bootstrap — "
+                    f"cannot proceed"
                 )
 
         elif keycloak_realm != DEFAULT_KEYCLOAK_REALM:
