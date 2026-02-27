@@ -67,6 +67,9 @@ jobs:
       - name: Run Ansible installer (dev mode with kagenti-operator)
         run: bash .github/scripts/kagenti-operator/30-run-installer.sh
 
+      - name: Build ui-oauth-secret image from PR and restart job
+        run: bash .github/scripts/common/25-build-oauth-secret-image.sh
+
       - name: Wait for platform to be ready
         run: bash .github/scripts/common/40-wait-platform-ready.sh
 
