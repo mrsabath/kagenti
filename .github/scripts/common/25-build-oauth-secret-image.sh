@@ -35,14 +35,13 @@ kubectl delete job "$JOB_NAME" -n "$NAMESPACE" --ignore-not-found
 sleep 2
 
 helm upgrade kagenti "$REPO_ROOT/charts/kagenti" -n "$NAMESPACE" \
-    --reuse-values --no-hooks 2>/dev/null || true
+    --reuse-values --no-hooks || true
 
 log_info "Waiting for oauth-secret job to complete..."
-kubectl wait --for=condition=complete job \
-    -l app.kubernetes.io/component=oauth-secret \
+kubectl wait --for=condition=complete "job/$JOB_NAME" \
     -n "$NAMESPACE" --timeout=120s || {
     log_error "OAuth secret job did not complete"
-    kubectl logs job/"$JOB_NAME" -n "$NAMESPACE" || true
+    kubectl logs "job/$JOB_NAME" -n "$NAMESPACE" || true
     exit 1
 }
 log_info "Restarting kagenti-ui to pick up the new secret..."
