@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Optional, Dict, Any
+from typing import Dict
 from keycloak import KeycloakAdmin
 from kagenti.auth.shared_utils import register_client
 from kubernetes import client, dynamic
@@ -345,8 +345,7 @@ def main() -> None:
                         )
                     except Exception as role_err:
                         logger.warning(
-                            f"Could not assign realm-admin role "
-                            f"(non-fatal): {role_err}"
+                            f"Could not assign realm-admin role (non-fatal): {role_err}"
                         )
 
                     # Create and assign an 'admin' realm role. The Kagenti
@@ -366,21 +365,15 @@ def main() -> None:
                                 }
                             )
                             logger.info(
-                                f"Created 'admin' realm role in "
-                                f"'{keycloak_realm}'"
+                                f"Created 'admin' realm role in '{keycloak_realm}'"
                             )
                         except Exception:
                             logger.info(
-                                "'admin' realm role already exists, "
-                                "skipping creation"
+                                "'admin' realm role already exists, skipping creation"
                             )
 
-                        admin_realm_role = keycloak_admin.get_realm_role(
-                            "admin"
-                        )
-                        keycloak_admin.assign_realm_roles(
-                            user_id, [admin_realm_role]
-                        )
+                        admin_realm_role = keycloak_admin.get_realm_role("admin")
+                        keycloak_admin.assign_realm_roles(user_id, [admin_realm_role])
                         logger.info(
                             f"Assigned 'admin' realm role to "
                             f"'{keycloak_admin_username}' in realm "
@@ -388,8 +381,7 @@ def main() -> None:
                         )
                     except Exception as role_err:
                         logger.warning(
-                            f"Could not assign admin realm role "
-                            f"(non-fatal): {role_err}"
+                            f"Could not assign admin realm role (non-fatal): {role_err}"
                         )
                 else:
                     logger.info(
@@ -398,8 +390,7 @@ def main() -> None:
                     )
             except Exception as e:
                 logger.error(
-                    f"Failed to provision default user in realm "
-                    f"'{keycloak_realm}': {e}"
+                    f"Failed to provision default user in realm '{keycloak_realm}': {e}"
                 )
                 raise
 
