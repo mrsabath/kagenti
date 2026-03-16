@@ -1289,7 +1289,6 @@ def _build_deployment_from_agent_crd(agent: dict) -> dict:
             )
 
         pod_spec = {
-            "serviceAccountName": name,
             "containers": [
                 {
                     "name": "agent",

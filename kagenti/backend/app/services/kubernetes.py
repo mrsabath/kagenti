@@ -212,7 +212,7 @@ class KubernetesService:
         """
         try:
             self.core_api.read_namespaced_service_account(name=name, namespace=namespace)
-            logger.debug(f"ServiceAccount '{name}' already exists in {namespace}")
+            logger.debug("ServiceAccount '%s' already exists in %s", name, namespace)
         except ApiException as e:
             if e.status == 404:
                 sa = kubernetes.client.V1ServiceAccount(
@@ -223,9 +223,9 @@ class KubernetesService:
                     ),
                 )
                 self.core_api.create_namespaced_service_account(namespace=namespace, body=sa)
-                logger.info(f"Created ServiceAccount '{name}' in {namespace}")
+                logger.info("Created ServiceAccount '%s' in %s", name, namespace)
             else:
-                logger.error(f"Error checking ServiceAccount '{name}' in {namespace}: {e}")
+                logger.error("Error checking ServiceAccount '%s' in %s: %s", name, namespace, e)
                 raise
 
     # -------------------------------------------------------------------------
